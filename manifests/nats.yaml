@@ -1,0 +1,71 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nats
+  labels:
+    name: nats
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: nats
+  namespace: kube-system
+spec:
+  repo: https://nats-io.github.io/k8s/helm/charts/
+  chart: nats
+  version: 1.2.5
+  targetNamespace: nats
+  createNamespace: true
+  valuesContent: |-
+    auth:
+      enabled: false
+    natsBox:
+      enabled: false
+    reloader:
+      enabled: false
+    promExporter:
+      enabled: false
+    config:
+      jetstream:
+        enabled: true
+      logging:
+        debug: true
+        trace: false
+      merge:
+        server_name: "nats"
+        authorization:
+          token: "s3cr3t"
+    service:
+      merge:
+        spec:
+          type: LoadBalancer
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: nats-credentials
+  namespace: nats
+type: Opaque
+stringData:
+  url: "nats://s3cr3t@nats.nats.svc.cluster.local:4222"
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nats
+  namespace: nats
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: traefik
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nats
+            port:
+              number: 4222

@@ -1,0 +1,26 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: httpbin
+  labels:
+    name: httpbin
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: istio-ingress
+  namespace: kube-system
+spec:
+  repo: https://istio-release.storage.googleapis.com/charts
+  chart: gateway
+  version: 1.21.6
+  targetNamespace: httpbin
+  createNamespace: true
+  valuesContent: |-
+    labels:
+      istio: ingressgateway
+      "ratelimit/config": "cluster"
+      "ratelimit/actions": "httpbin-ratelimit"
+    global:
+      platform: k3d

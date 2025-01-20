@@ -1,0 +1,23 @@
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: calico
+  namespace: kube-system
+spec:
+  repo: https://docs.tigera.io/calico/charts
+  chart: tigera-operator
+  version: v3.29.1
+  targetNamespace: tigera-operator
+  createNamespace: true
+  valuesContent: |
+    installation:
+      enabled: true
+      kubernetesProvider: ""
+      cni:
+        type: Calico
+        ipam:
+          type: Calico
+      calicoNetwork:
+        bgp: Enabled
+        containerIPForwarding: Enabled
