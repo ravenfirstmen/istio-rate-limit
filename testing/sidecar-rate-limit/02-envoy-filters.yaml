@@ -8,7 +8,30 @@ spec:
   workloadSelector:
     labels:
       "ratelimit/config": "cluster"
+      
   configPatches:
+    - applyTo: CLUSTER
+      match:
+        cluster:
+          service: ratelimit.rate-limit.svc.cluster.local
+      patch:
+        operation: ADD
+        value:
+          name: rate_limit_cluster
+          type: STRICT_DNS
+          connect_timeout: 10s
+          lb_policy: ROUND_ROBIN
+          http2_protocol_options: {}
+          load_assignment:
+            cluster_name: rate_limit_cluster
+            endpoints:
+            - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: ratelimit.rate-limit.svc.cluster.local
+                      port_value: 8081
+
     - applyTo: HTTP_FILTER
       match:
         context: SIDECAR_INBOUND
@@ -31,8 +54,7 @@ spec:
             rate_limit_service:
               grpc_service:
                 envoy_grpc:
-                  cluster_name: outbound|8081||ratelimit.rate-limit.svc.cluster.local
-                  authority: ratelimit.rate-limit.svc.cluster.local
+                  cluster_name: rate_limit_cluster
               transport_api_version: V3
 ---
 apiVersion: networking.istio.io/v1alpha3
