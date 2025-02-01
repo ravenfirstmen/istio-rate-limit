@@ -25,7 +25,6 @@ k3d cluster create "${CLUSTER_NAME}" \
     --port "9090:9090@loadbalancer" \
     --port "3000:3000@loadbalancer" \
     --port "3100:3100@loadbalancer" \
-    --port "4222:4222@loadbalancer" \
     --servers 3 \
     --agents 1 \
     --wait \
